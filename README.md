@@ -81,6 +81,6 @@ A documentação completa da API pode ser acessada via Swagger. Abaixo estão os
 -   **Gabriel Cortez**
     -   GitHub: https://github.com/cortezinho
 -   **Heloisa Vichiatto**
-    -   GitHub: https://github.com/dodottie
+    -   GitHub: https://github.com/dodottiee
 -   **João Vitor Pinheiro**
     -   GitHub: https://github.com/jvpinheiro1
