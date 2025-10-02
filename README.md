@@ -1,4 +1,4 @@
-# 1. Sistema de Gerenciamento de Biblioteca
+# 1. PIBlioteca
 <p align="center"><img src="" alt="Status do Projeto"/><img src="" alt="Licença MIT"/></p><p align="center">Um sistema completo para gerenciamento de bibliotecas, com frontend em React e backend em Java com Spring Boot.</p><p align="center"><a href="#-tecnologias-utilizadas">Tecnologias</a> •<a href="#-pré-requisitos">Pré-requisitos</a> •<a href="#-como-executar-o-projeto">Como Executar</a> •<a href="#-endpoints-da-api">API</a> •<a href="#-autor">Autor</a></p>✨ Tecnologias UtilizadasEste projeto foi construído utilizando tecnologias modernas e robustas do mercado:Frontend:Backend:Banco de Dados:DevOps:⚙️ Pré-requisitosAntes de começar, certifique-se de ter as seguintes ferramentas instaladas em sua máquina:GitNode.js v18+JDK 21Docker e Docker Compose🏁 Como Executar o ProjetoO método recomendado para executar o projeto é utilizando Docker, pois ele configura todo o ambiente de forma automática e isolada.# 1. Clone o repositório para sua máquina local
 git clone <url-do-seu-repositorio>
 
