@@ -1,0 +1,341 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Sistema de Biblioteca</title>
+    <style>
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+            margin: 0;
+            padding: 0;
+            background-color: #f4f4f9;
+            color: #333;
+        }
+        .container {
+            max-width: 1200px;
+            margin: 20px auto;
+            padding: 20px;
+            background-color: #fff;
+            border-radius: 8px;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+        }
+        h1, h2 {
+            color: #444;
+            border-bottom: 2px solid #5c67f2;
+            padding-bottom: 10px;
+        }
+        .grid-container {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(400px, 1fr));
+            gap: 40px;
+        }
+        section {
+            background-color: #fafafa;
+            padding: 20px;
+            border-radius: 8px;
+            border: 1px solid #ddd;
+        }
+        form {
+            display: flex;
+            flex-direction: column;
+            gap: 10px;
+        }
+        input, select, button {
+            padding: 10px;
+            border-radius: 5px;
+            border: 1px solid #ccc;
+            font-size: 1rem;
+        }
+        button {
+            background-color: #5c67f2;
+            color: white;
+            border: none;
+            cursor: pointer;
+            transition: background-color 0.3s;
+        }
+        button:hover {
+            background-color: #4a54c4;
+        }
+        button.delete, button.return {
+             background-color: #f25c5c;
+        }
+        button.delete:hover {
+            background-color: #c44a4a;
+        }
+        button.return:hover {
+             background-color: #c44a4a;
+        }
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            margin-top: 20px;
+        }
+        th, td {
+            padding: 12px;
+            text-align: left;
+            border-bottom: 1px solid #ddd;
+        }
+        th {
+            background-color: #f2f2f2;
+        }
+        #relatorio-resultado {
+            margin-top: 20px;
+            padding: 15px;
+            background-color: #e9e9f9;
+            border-radius: 5px;
+        }
+    </style>
+</head>
+<body>
+
+    <div class="container">
+        <h1>Sistema de Gestão de Biblioteca</h1>
+
+        <div class="grid-container">
+            <section id="clientes-section">
+                <h2>Gerenciar Clientes</h2>
+                <form id="form-cliente">
+                    <input type="text" id="cliente-nome" placeholder="Nome" required>
+                    <input type="text" id="cliente-sobrenome" placeholder="Sobrenome" required>
+                    <input type="text" id="cliente-cpf" placeholder="CPF" required>
+                    <button type="submit">Adicionar Cliente</button>
+                </form>
+                <table id="tabela-clientes">
+                    <thead>
+                        <tr>
+                            <th>ID</th>
+                            <th>Nome</th>
+                            <th>CPF</th>
+                        </tr>
+                    </thead>
+                    <tbody></tbody>
+                </table>
+            </section>
+
+            <section id="livros-section">
+                <h2>Gerenciar Livros</h2>
+                <form id="form-livro">
+                    <input type="text" id="livro-titulo" placeholder="Título" required>
+                    <input type="text" id="livro-autor" placeholder="Autor" required>
+                    <input type="number" id="livro-isbn" placeholder="ISBN" required>
+                    <input type="text" id="livro-genero" placeholder="Gênero" required>
+                    <button type="submit">Adicionar Livro</button>
+                </form>
+                 <table id="tabela-livros">
+                    <thead>
+                        <tr>
+                            <th>ID</th>
+                            <th>Título</th>
+                            <th>Status</th>
+                        </tr>
+                    </thead>
+                    <tbody></tbody>
+                </table>
+            </section>
+        </div>
+
+        <div class="grid-container" style="margin-top: 40px;">
+            <section id="emprestimos-section">
+                <h2>Realizar Empréstimo</h2>
+                <form id="form-emprestimo">
+                    <select id="select-cliente" required>
+                        <option value="">Selecione um Cliente</option>
+                    </select>
+                    <select id="select-livros" multiple required>
+                        </select>
+                    <button type="submit">Criar Empréstimo</button>
+                </form>
+
+                <h3>Empréstimos Ativos</h3>
+                <table id="tabela-emprestimos">
+                    <thead>
+                        <tr>
+                            <th>ID</th>
+                            <th>Cliente</th>
+                            <th>Data Empréstimo</th>
+                            <th>Ação</th>
+                        </tr>
+                    </thead>
+                    <tbody></tbody>
+                </table>
+            </section>
+
+            <section id="relatorios-section">
+                <h2>Relatórios</h2>
+                <button id="btn-gerar-relatorio">Gerar Relatório de Livros Mais Emprestados</button>
+                <div id="relatorio-resultado">
+                    <p>O resultado do relatório aparecerá aqui.</p>
+                </div>
+            </section>
+        </div>
+    </div>
+
+    <script>
+        const API_URL = 'http://localhost:8080';
+
+        // --- Funções de Renderização ---
+        const renderClientes = (clientes) => {
+            const tbody = document.querySelector('#tabela-clientes tbody');
+            const selectCliente = document.querySelector('#select-cliente');
+            tbody.innerHTML = '';
+            selectCliente.innerHTML = '<option value="">Selecione um Cliente</option>';
+            clientes.forEach(cliente => {
+                const tr = `<tr>
+                                <td>${cliente.id}</td>
+                                <td>${cliente.nome} ${cliente.sobrenome}</td>
+                                <td>${cliente.cpf}</td>
+                            </tr>`;
+                tbody.innerHTML += tr;
+                const option = `<option value="${cliente.id}">${cliente.nome} ${cliente.sobrenome}</option>`;
+                selectCliente.innerHTML += option;
+            });
+        };
+
+        const renderLivros = (livros) => {
+            const tbody = document.querySelector('#tabela-livros tbody');
+            const selectLivros = document.querySelector('#select-livros');
+            tbody.innerHTML = '';
+            selectLivros.innerHTML = '';
+            livros.forEach(livro => {
+                const tr = `<tr>
+                                <td>${livro.idLivro}</td>
+                                <td>${livro.titulo}</td>
+                                <td>${livro.status}</td>
+                            </tr>`;
+                tbody.innerHTML += tr;
+                if (livro.status === 'DISPONIVEL') {
+                    const option = `<option value="${livro.idLivro}">${livro.titulo}</option>`;
+                    selectLivros.innerHTML += option;
+                }
+            });
+        };
+
+        const renderEmprestimos = (emprestimos) => {
+             const tbody = document.querySelector('#tabela-emprestimos tbody');
+             tbody.innerHTML = '';
+             emprestimos.filter(e => !e.dataDevolucao).forEach(emprestimo => {
+                 const tr = `<tr>
+                                 <td>${emprestimo.id}</td>
+                                 <td>${emprestimo.cliente.nome}</td>
+                                 <td>${new Date(emprestimo.dataEmprestimo).toLocaleDateString()}</td>
+                                 <td><button class="return" onclick="devolverEmprestimo(${emprestimo.id})">Devolver</button></td>
+                             </tr>`;
+                 tbody.innerHTML += tr;
+             });
+        };
+
+        const renderRelatorio = (relatorio) => {
+            const resultadoDiv = document.querySelector('#relatorio-resultado');
+            resultadoDiv.innerHTML = '<h3>Livros Mais Emprestados:</h3><ul>';
+            for (const livro in relatorio) {
+                const livroObj = JSON.parse(livro);
+                resultadoDiv.innerHTML += `<li>${livroObj.titulo} - ${relatorio[livro]} vez(es)</li>`;
+            }
+            resultadoDiv.innerHTML += '</ul>';
+        }
+
+        // --- Funções da API ---
+        const fetchData = async () => {
+            try {
+                const [clientesRes, livrosRes, emprestimosRes] = await Promise.all([
+                    fetch(`${API_URL}/cliente`),
+                    fetch(`${API_URL}/livro`),
+                    fetch(`${API_URL}/emprestimo`)
+                ]);
+                
+                const clientes = await clientesRes.json();
+                const livros = await livrosRes.json();
+                const emprestimos = await emprestimosRes.json();
+                
+                renderClientes(clientes);
+                renderLivros(livros);
+                renderEmprestimos(emprestimos);
+            } catch (error) {
+                console.error('Erro ao carregar dados iniciais:', error);
+                alert('Não foi possível carregar os dados. Verifique se a API está rodando.');
+            }
+        };
+
+        const postData = async (url, data) => {
+            try {
+                const response = await fetch(url, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify(data)
+                });
+                if (!response.ok) {
+                    throw new Error(`Erro na requisição: ${response.statusText}`);
+                }
+                return await response.json();
+            } catch (error) {
+                console.error('Erro ao enviar dados:', error);
+                alert(`Erro: ${error.message}`);
+            }
+        };
+        
+        // --- Handlers de Evento ---
+        document.getElementById('form-cliente').addEventListener('submit', async (e) => {
+            e.preventDefault();
+            const data = {
+                nome: document.getElementById('cliente-nome').value,
+                sobrenome: document.getElementById('cliente-sobrenome').value,
+                cpf: document.getElementById('cliente-cpf').value
+            };
+            await postData(`${API_URL}/cliente`, data);
+            e.target.reset();
+            fetchData();
+        });
+
+        document.getElementById('form-livro').addEventListener('submit', async (e) => {
+            e.preventDefault();
+            const data = {
+                titulo: document.getElementById('livro-titulo').value,
+                autor: document.getElementById('livro-autor').value,
+                isbn: document.getElementById('livro-isbn').value,
+                genero: document.getElementById('livro-genero').value,
+                status: 'DISPONIVEL' // Livros são cadastrados como disponíveis
+            };
+            await postData(`${API_URL}/livro`, data);
+            e.target.reset();
+            fetchData();
+        });
+
+        document.getElementById('form-emprestimo').addEventListener('submit', async (e) => {
+            e.preventDefault();
+            const clienteId = document.getElementById('select-cliente').value;
+            const livroIds = Array.from(document.getElementById('select-livros').selectedOptions).map(opt => opt.value);
+            
+            const data = {
+                clienteId: parseInt(clienteId),
+                livroIds: livroIds.map(id => parseInt(id)),
+                dataEmprestimo: new Date().toISOString().split('T')[0] // Data de hoje
+            };
+            
+            await postData(`${API_URL}/emprestimo`, data);
+            e.target.reset();
+            fetchData();
+        });
+
+        const devolverEmprestimo = async (id) => {
+            await fetch(`${API_URL}/emprestimo/devolver/${id}`, { method: 'POST' });
+            fetchData();
+        };
+
+        document.getElementById('btn-gerar-relatorio').addEventListener('click', async () => {
+            try {
+                const response = await fetch(`${API_URL}/relatorio/livros-mais-emprestados`);
+                const data = await response.json();
+                renderRelatorio(data);
+            } catch (error) {
+                 console.error('Erro ao gerar relatório:', error);
+                 alert('Erro ao gerar relatório.');
+            }
+        });
+
+        // --- Inicialização ---
+        document.addEventListener('DOMContentLoaded', fetchData);
+    </script>
+
+</body>
+</html>
