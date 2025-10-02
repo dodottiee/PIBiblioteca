@@ -75,12 +75,12 @@ A documentação completa da API pode ser acessada via Swagger. Abaixo estão os
 ## Autores
     
 -   **Bruno Duran**
--   GitHub: https://github.com/BrunoDuranTeodoro
+    -   GitHub: https://github.com/BrunoDuranTeodoro
 -   **Gabriel Correa**
--   GitHub: https://github.com/biels25
+    -   GitHub: https://github.com/biels25
 -   **Gabriel Cortez**
--   GitHub: https://github.com/cortezinho
+    -   GitHub: https://github.com/cortezinho
 -   **Heloisa  Vichiatto**
--   GitHub: https://github.com/dodottie
+    -   GitHub: https://github.com/dodottie
 -   **João Vitor Pinheiro**
--   GitHub: https://github.com/jvpinheiro1
+    -   GitHub: https://github.com/jvpinheiro1
