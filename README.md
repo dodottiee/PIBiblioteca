@@ -8,7 +8,7 @@ Um sistema completo para gerenciamento de bibliotecas, com frontend em React e b
 
 -   **Frontend**: React
 -   **Backend**: Java 21, Spring Boot
--   **Banco de Dados**: MySQL
+-   **Banco de Dados**: PostGreSQL
 -   **Containerização**: Docker, Docker Compose
 
 ---
