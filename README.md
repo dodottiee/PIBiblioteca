@@ -1,40 +1,4 @@
-📖 Sistema de Gerenciamento de Biblioteca<p align="center"><img src="https://www.google.com/search?q=https://img.shields.io/badge/status-em%2520desenvolvimento-yellow%3Fstyle%3Dfor-the-badge" alt="Status do Projeto"/><img src="https://www.google.com/search?q=https://img.shields.io/badge/licen%25C3%25A7a-MIT-blue%3Fstyle%3Dfor-the-badge" alt="Licença MIT"/></p><p align="center">Um sistema completo para gerenciamento de bibliotecas, com frontend em React e backend em Java/Spring Boot.</p><p align="center"><a href="#-tecnologias-utilizadas">Tecnologias</a> •<a href="#-canvas-da-arquitetura">Arquitetura</a> •<a href="#-como-executar-o-projeto">Como Executar</a> •<a href="#-endpoints-da-api">API</a> •<a href="#-autor">Autor</a></p>✨ Tecnologias UtilizadasEste projeto foi construído utilizando tecnologias modernas e robustas do mercado:CategoriaTecnologiaFrontendBackendBanco de DadosDevOps🏛️ Canvas da ArquiteturaO diagrama abaixo ilustra a arquitetura geral do sistema e como os componentes se comunicam de forma orquestrada.   +-----------------------+
-   |  👤 USUÁRIO           |
-   |  (Desenvolvedor)      |
-   +-----------+-----------+
-               |
-               | ➡️ Interage com
-               v
-   +-------------------------------------------------------------+
-   |   📦 REPOSITÓRIO GITHUB (biblioteca-management-system)      |
-   |                                                             |
-   |  [ frontend/ ]  [ backend/ ]  [ docs/ ]  [ .github/ ]       |
-   |                                                             |
-   |  +-------------------------------------------------------+  |
-   |  | 📜 docker-compose.yml                                 |  |
-   |  +---------------------+---------------------------------+  |
-   |                        |                                    |
-   |                        | ⚙️ Orquestra o ambiente local       |
-   |                        v                                    |
-   |  +-------------------------------------------------------+  |
-   |  | 🐳 AMBIENTE CONTAINERIZADO (DOCKER)                     |  |
-   |  |                                                       |  |
-   |  |  +---------------+      API REST      +-------------+ |  |
-   |  |  | 💻 FRONTEND   | <---------------> | ☕ BACKEND    | |  |
-   |  |  | (React)       |     (HTTP)        | (Spring)    | |  |
-   |  |  | 🚪 Porta: 3000 |                   | 🚪 Porta: 8080| |  |
-   |  |  +---------------+                   +------+------+ |  |
-   |  |                                              |        |  |
-   |  |                                       💾 JDBC |        |  |
-   |  |                                              v        |  |
-   |  |                                      +-------------+ |  |
-   |  |                                      | 🛢️ BANCO DE | |  |
-   |  |                                      |    DADOS    | |  |
-   |  |                                      |   (MySQL)   | |  |
-   |  |                                      +-------------+ |  |
-   |  +-------------------------------------------------------+  |
-   +-------------------------------------------------------------+
-⚙️ Pré-requisitosAntes de começar, certifique-se de ter as seguintes ferramentas instaladas em sua máquina:GitNode.js v18+JDK 21Docker e Docker Compose🏁 Como Executar o ProjetoO método recomendado para executar o projeto é utilizando Docker, pois ele configura todo o ambiente de forma automática e isolada.# 1. Clone o repositório para sua máquina local
+📖 Sistema de Gerenciamento de Biblioteca<p align="center"><img src="https://www.google.com/search?q=https://img.shields.io/badge/status-em%2520desenvolvimento-yellow%3Fstyle%3Dfor-the-badge" alt="Status do Projeto"/><img src="https://www.google.com/search?q=https://img.shields.io/badge/licen%25C3%25A7a-MIT-blue%3Fstyle%3Dfor-the-badge" alt="Licença MIT"/></p><p align="center">Um sistema completo para gerenciamento de bibliotecas, com frontend em React e backend em Java com Spring Boot.</p><p align="center"><a href="#-tecnologias-utilizadas">Tecnologias</a> •<a href="#-pré-requisitos">Pré-requisitos</a> •<a href="#-como-executar-o-projeto">Como Executar</a> •<a href="#-endpoints-da-api">API</a> •<a href="#-autor">Autor</a></p>✨ Tecnologias UtilizadasEste projeto foi construído utilizando tecnologias modernas e robustas do mercado:Frontend:Backend:Banco de Dados:DevOps:⚙️ Pré-requisitosAntes de começar, certifique-se de ter as seguintes ferramentas instaladas em sua máquina:GitNode.js v18+JDK 21Docker e Docker Compose🏁 Como Executar o ProjetoO método recomendado para executar o projeto é utilizando Docker, pois ele configura todo o ambiente de forma automática e isolada.# 1. Clone o repositório para sua máquina local
 git clone <url-do-seu-repositorio>
 
 # 2. Acesse a pasta raiz do projeto
