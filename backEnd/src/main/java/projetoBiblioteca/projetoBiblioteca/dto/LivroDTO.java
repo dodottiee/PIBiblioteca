@@ -23,7 +23,7 @@ public class LivroDTO {
     }
     public static Livro fromDTO(LivroDTO dto) {
         Livro livro = new Livro();
-        livro.setTitulo(dto.getAutor());
+        livro.setTitulo(dto.getTitulo());
         livro.setAutor(dto.getAutor());
         livro.setIsbn(dto.getIsbn());
         livro.setGenero(dto.getGenero());
