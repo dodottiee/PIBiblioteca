@@ -8,6 +8,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
 import projetoBiblioteca.projetoBiblioteca.dto.EmprestimoDTO;
+import projetoBiblioteca.projetoBiblioteca.exeption.ResourceNotFoundException;
 import projetoBiblioteca.projetoBiblioteca.model.Cliente;
 import projetoBiblioteca.projetoBiblioteca.model.Emprestimo;
 import projetoBiblioteca.projetoBiblioteca.model.EmprestimoLivro;
@@ -30,8 +31,15 @@ public class EmprestimoService {
     private LivroRepository livroRepository;
 
     public Emprestimo criarEmprestimo(EmprestimoDTO emprestimoDTO) {
-        Cliente cliente = clienteRepository.findById(emprestimoDTO.getClienteId()).orElseThrow(() -> new RuntimeException("Cliente não encontrado"));
+        Cliente cliente = clienteRepository.findById(emprestimoDTO.getClienteId())
+                .orElseThrow(() -> new ResourceNotFoundException("Cliente não encontrado com o ID: " + emprestimoDTO.getClienteId()));
+        
         List<Livro> livros = livroRepository.findAllById(emprestimoDTO.getLivroIds());
+
+        // Verificação se todos os livros solicitados foram encontrados
+        if (livros.size() != emprestimoDTO.getLivroIds().size()) {
+            throw new ResourceNotFoundException("Um ou mais livros não foram encontrados.");
+        }
 
         Emprestimo emprestimo = new Emprestimo();
         emprestimo.setCliente(cliente);
@@ -41,7 +49,7 @@ public class EmprestimoService {
         List<EmprestimoLivro> emprestimoLivros = new ArrayList<>();
         for (Livro livro : livros) {
             if (livro.getStatus() != StatusLivro.DISPONIVEL) {
-                throw new RuntimeException("O livro " + livro.getTitulo() + " não está disponível.");
+                throw new RuntimeException("O livro '" + livro.getTitulo() + "' não está disponível para empréstimo.");
             }
             livro.setStatus(StatusLivro.EMPRESTADO);
             EmprestimoLivro emprestimoLivro = new EmprestimoLivro();
@@ -56,7 +64,9 @@ public class EmprestimoService {
     }
 
     public void devolverLivro(Long emprestimoId) {
-        Emprestimo emprestimo = emprestimoRepository.findById(emprestimoId).orElseThrow(() -> new RuntimeException("Empréstimo não encontrado."));
+        Emprestimo emprestimo = emprestimoRepository.findById(emprestimoId)
+                .orElseThrow(() -> new ResourceNotFoundException("Empréstimo não encontrado com o ID: " + emprestimoId));
+        
         emprestimo.setDataDevolucao(LocalDate.now());
 
         for (EmprestimoLivro emprestimoLivro : emprestimo.getEmprestimoLivros()) {
