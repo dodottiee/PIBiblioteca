@@ -23,21 +23,35 @@ public class SecurityConfig {
     public SecurityFilterChain securityFilterChain(HttpSecurity http) throws Exception {
         http
                 .csrf(csrf -> csrf.disable())
-                // --- CONFIGURAÇÃO CORS DIRETA ---
+                // A configuração de CORS aqui também é importante
                 .cors(cors -> cors.configurationSource(request -> {
                     CorsConfiguration configuration = new CorsConfiguration();
-                    configuration.setAllowedOriginPatterns(Arrays.asList("*")); // Permite qualquer origem
+                    configuration.setAllowedOriginPatterns(Arrays.asList("*")); 
                     configuration.setAllowedMethods(Arrays.asList("GET", "POST", "PUT", "DELETE", "OPTIONS", "HEAD"));
                     configuration.setAllowedHeaders(Arrays.asList("*"));
-                    // configuration.setAllowCredentials(true); // Se precisar no futuro
                     return configuration;
                 }))
-                // --- FIM DA CONFIGURAÇÃO CORS DIRETA ---
                 .sessionManagement(session -> session.sessionCreationPolicy(SessionCreationPolicy.STATELESS))
                 .authorizeHttpRequests(authorize -> authorize
                         .requestMatchers(HttpMethod.POST, "/auth/login").permitAll()
                         .requestMatchers(HttpMethod.POST, "/auth/register").permitAll()
                         .requestMatchers("/swagger-ui/**", "/v3/api-docs/**").permitAll()
+
+                        // Permissões de endpoint
+                        .requestMatchers(HttpMethod.GET, "/livro/**").permitAll()
+                        
+                        // --- CORREÇÃO AQUI ---
+                        // Adicionada permissão para CRIAR livros (POST /livro)
+                        .requestMatchers(HttpMethod.POST, "/livro").permitAll() 
+                        // --- FIM DA CORREÇÃO ---
+
+                        .requestMatchers(HttpMethod.GET, "/cliente/**").permitAll()
+                        .requestMatchers(HttpMethod.GET, "/emprestimo/**").permitAll()
+                        .requestMatchers(HttpMethod.POST, "/cliente").permitAll()
+                        .requestMatchers(HttpMethod.POST, "/emprestimo/**").permitAll()
+                        .requestMatchers(HttpMethod.POST, "/emprestimo/devolver/**").permitAll() 
+                        .requestMatchers(HttpMethod.GET, "/relatorio/**").permitAll()
+                        
                         .anyRequest().authenticated()
                 );
 
@@ -54,23 +68,4 @@ public class SecurityConfig {
     public PasswordEncoder passwordEncoder() {
         return new BCryptPasswordEncoder();
     }
-
-    /**
-     * Bean que configura as regras de CORS (Cross-Origin Resource Sharing).
-     * Permite que o frontend (rodando em outra porta/domínio) acesse a API.
-     * Aqui estamos permitindo qualquer origem, método e cabeçalho,
-     * o que é comum em desenvolvimento, mas pode ser restringido em produção.
-     */
-    //    @Bean
-    // CorsConfigurationSource corsConfigurationSource() {
-    //     CorsConfiguration configuration = new CorsConfiguration();
-    //     configuration.setAllowedOriginPatterns(Arrays.asList("*")); 
-    //     configuration.setAllowedMethods(Arrays.asList("GET", "POST", "PUT", "DELETE", "OPTIONS", "HEAD")); 
-    //     configuration.setAllowedHeaders(Arrays.asList("*")); 
-    //     UrlBasedCorsConfigurationSource source = new UrlBasedCorsConfigurationSource();
-    //     source.registerCorsConfiguration("/**", configuration); 
-    //     return source;
-    // }
-
-
 }
