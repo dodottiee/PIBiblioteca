@@ -18,50 +18,45 @@ const bookColors = [
 ];
 
 function App() {
-  // Estado para livros disponíveis
   const [books, setBooks] = useState([]);
-  // Estado para empréstimos ativos (Meus Livros)
   const [myBooks, setMyBooks] = useState([]);
   
-  // Como seu Profile.jsx é estático, vamos usar um ID de cliente fixo
-  // Em um app real, este ID viria do login
+  // ID fixo para teste, já que removemos a autenticação
   const CLIENTE_ID = 1; 
 
   const getRandomColor = () => {
     return bookColors[Math.floor(Math.random() * bookColors.length)];
   };
 
-  // Função para buscar todos os dados da API
   const fetchData = async () => {
+    // Headers simples, sem Authorization
+    const headers = {
+        'Content-Type': 'application/json'
+    };
+
     try {
       // 1. Buscar todos os livros
-      const livrosResponse = await fetch(`${API_URL}/livro`);
+      const livrosResponse = await fetch(`${API_URL}/livro`, { headers });
       if (!livrosResponse.ok) throw new Error('Erro ao buscar livros');
       const todosLivros = await livrosResponse.json();
       
-      // Filtra apenas os livros DISPONIVEIS
-      // O backend retorna 'idLivro' (Model Livro.java)
       setBooks(todosLivros.filter(livro => livro.status === 'DISPONIVEL'));
 
       // 2. Buscar todos os empréstimos
-      const emprestimosResponse = await fetch(`${API_URL}/emprestimo`);
+      const emprestimosResponse = await fetch(`${API_URL}/emprestimo`, { headers });
       if (!emprestimosResponse.ok) throw new Error('Erro ao buscar empréstimos');
       const todosEmprestimos = await emprestimosResponse.json();
       
-      // Adiciona uma cor aleatória para cada empréstimo (para manter o visual)
       const emprestimosComCor = todosEmprestimos
-        // Filtra apenas empréstimos ativos (sem data de devolução)
         .filter(emp => !emp.dataDevolucao) 
         .map(emp => {
-          // Calcula data de devolução (Ex: 7 dias após data do empréstimo)
-          // A dataEmprestimo vem como "YYYY-MM-DD"
-          const dataEmp = new Date(emp.dataEmprestimo + 'T00:00:00'); // Ajusta fuso
+          const dataEmp = new Date(emp.dataEmprestimo + 'T00:00:00');
           const dataDev = new Date(dataEmp.getTime() + 7 * 24 * 60 * 60 * 1000);
           
           return {
             ...emp,
             color: getRandomColor(),
-            dueDate: dataDev.toLocaleDateString('pt-BR') // Formata para "DD/MM/YYYY"
+            dueDate: dataDev.toLocaleDateString('pt-BR')
           };
         });
 
@@ -72,54 +67,49 @@ function App() {
     }
   };
 
-  // useEffect para buscar os dados quando o componente montar
   useEffect(() => {
     fetchData();
-  }, []); // O array vazio [] garante que isso rode apenas uma vez
+  }, []);
 
-  // Função chamada pelo BookList.jsx para criar um empréstimo
   const addBookToMyList = async (book, dueDate) => {
     const emprestimoDTO = {
       clienteId: CLIENTE_ID, 
-      livroIds: [book.idLivro], // A API espera 'idLivro' (Model Livro.java)
-      dataEmprestimo: new Date().toISOString().split('T')[0], // Data de hoje (YYYY-MM-DD)
-      dataDevolucao: dueDate || null // Data de devolução do modal
+      livroIds: [book.idLivro], 
+      dataEmprestimo: new Date().toISOString().split('T')[0], 
+      dataDevolucao: dueDate || null 
     };
 
     try {
       const response = await fetch(`${API_URL}/emprestimo`, {
         method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
+        headers: { 'Content-Type': 'application/json' }, // Sem token
         body: JSON.stringify(emprestimoDTO)
       });
 
       if (!response.ok) {
-        const erro = await response.json(); // Tenta ler o erro do backend
+        const erro = await response.json();
         throw new Error(erro.detalhes || 'Erro ao registrar empréstimo');
       }
 
-      // Após o sucesso, atualiza as listas
       fetchData(); 
 
     } catch (error) {
       console.error("Erro ao emprestar livro:", error);
-      alert(error.message); // Mostra o erro para o usuário
+      alert(error.message);
     }
   };
 
-  // Função chamada pelo MyBooks.jsx para devolver um livro (Empréstimo)
   const removeBookFromMyList = async (emprestimo) => {
     try {
-      // O endpoint de devolução espera o ID do *Empréstimo*
       const response = await fetch(`${API_URL}/emprestimo/devolver/${emprestimo.id}`, {
         method: 'POST'
+        // Sem headers de autorização
       });
 
       if (!response.ok) {
         throw new Error('Erro ao devolver livro');
       }
 
-      // Após o sucesso, atualiza as listas
       fetchData();
 
     } catch (error) {
