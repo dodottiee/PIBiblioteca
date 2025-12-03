@@ -1,34 +1,31 @@
 import React, { useState } from 'react';
 import Modal from '../Modal';
 
-// --- MUDANÇA AQUI ---
-// O prop 'myBooks' agora é uma lista de Empréstimos
 function MyBooks({ myBooks, onRemoveBook }) {
   const [searchTerm, setSearchTerm] = useState('');
   const [showModal, setShowModal] = useState(false);
-  const [selectedBook, setSelectedBook] = useState(null); // 'selectedBook' agora será o objeto Empréstimo
+  const [selectedBook, setSelectedBook] = useState(null);
 
-  // A lógica de filtro precisa olhar para os livros dentro do empréstimo
   const filteredBooksRead = myBooks.filter(emprestimo => {
-    // Vamos assumir que cada empréstimo tem pelo menos um livro
-    // (Model Emprestimo.java -> List<EmprestimoLivro> emprestimoLivros)
-    const livro = emprestimo.emprestimoLivros[0]?.livro;
-    if (!livro) return false; // Se não houver livro, não mostra
+    // Proteção: usa '?.' para não quebrar se o livro vier nulo do banco
+    const livro = emprestimo.emprestimoLivros?.[0]?.livro;
     
-    // O model Livro.java tem 'titulo' e 'autor'
+    // Se por algum erro de banco o livro for null, exibimos mesmo assim para debug
+    if (!livro) return true; 
+    
     return livro.titulo.toLowerCase().includes(searchTerm.toLowerCase()) ||
            livro.autor.toLowerCase().includes(searchTerm.toLowerCase());
   });
 
-  // 'emprestimo' é o objeto completo do empréstimo
   const handleBookClick = (emprestimo) => {
-    setSelectedBook(emprestimo); // Salva o empréstimo selecionado
-    setShowModal(true);
+    // Só permite devolver se AINDA NÃO foi devolvido
+    if (!emprestimo.isDevolvido) {
+        setSelectedBook(emprestimo);
+        setShowModal(true);
+    }
   };
 
   const handleConfirm = () => {
-    // 'selectedBook' é o empréstimo. onRemoveBook (removeBookFromMyList)
-    // precisa do objeto empréstimo.
     onRemoveBook(selectedBook);
     setShowModal(false);
     setSelectedBook(null);
@@ -45,28 +42,41 @@ function MyBooks({ myBooks, onRemoveBook }) {
       <input
         className="search-input"
         type="text"
-        placeholder="Search"
+        placeholder="Buscar nos meus livros..."
         value={searchTerm}
         onChange={(e) => setSearchTerm(e.target.value)}
       />
       <div className="my-books-list">
         <ul>
+          {filteredBooksRead.length === 0 && (
+             <li style={{ padding: '20px', color: '#666', textAlign: 'center' }}>
+               Nenhum livro encontrado.
+             </li>
+          )}
+
           {filteredBooksRead.map((emprestimo) => {
-            // Pega o primeiro livro do empréstimo para exibir
-            // (Model EmprestimoLivro.java -> Livro livro)
-            const livro = emprestimo.emprestimoLivros[0]?.livro;
-            if (!livro) return null; // Não renderiza se não houver livro
+            // Tenta pegar os dados do livro com segurança
+            const livro = emprestimo.emprestimoLivros?.[0]?.livro;
+            const tituloExibicao = livro ? livro.titulo : "Livro não identificado";
+            const autorExibicao = livro ? livro.autor : "";
 
             return (
               <li
-                key={emprestimo.id} // A key agora é o ID do empréstimo
+                key={emprestimo.id}
                 className="book-item"
                 onClick={() => handleBookClick(emprestimo)}
-                style={{ backgroundColor: emprestimo.color }} // Usa a cor do objeto empréstimo
+                style={{ 
+                    backgroundColor: emprestimo.color || '#fff',
+                    // Deixa transparente e muda o cursor se já estiver devolvido
+                    opacity: emprestimo.isDevolvido ? 0.6 : 1, 
+                    cursor: emprestimo.isDevolvido ? 'default' : 'pointer'
+                }}
               >
                 <div className="book-info">
-                  <span className="book-title">{livro.titulo}</span>
-                  <span className="book-author">{livro.autor}</span>
+                  <span className="book-title">
+                    {tituloExibicao} {emprestimo.isDevolvido && "(Devolvido)"}
+                  </span>
+                  <span className="book-author">{autorExibicao}</span>
                 </div>
               </li>
             );
@@ -77,8 +87,7 @@ function MyBooks({ myBooks, onRemoveBook }) {
       <Modal
         show={showModal}
         title="Devolver Livro"
-        // Usa o 'dueDate' que adicionamos no App.jsx
-        message={`Data de devolução: ${selectedBook?.dueDate || 'Não especificada'}. Deseja devolver o livro agora?`}
+        message={`Data de devolução prevista: ${selectedBook?.dueDate}. Deseja devolver este livro agora?`}
         onConfirm={handleConfirm}
         onCancel={handleCancel}
       />

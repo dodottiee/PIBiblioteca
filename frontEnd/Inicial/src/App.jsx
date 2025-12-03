@@ -21,46 +21,65 @@ function App() {
   const [books, setBooks] = useState([]);
   const [myBooks, setMyBooks] = useState([]);
   
-  // ID fixo para teste, já que removemos a autenticação
+  // ID do cliente (Certifique-se que este ID existe na tabela 'cliente' do seu banco)
   const CLIENTE_ID = 1; 
 
   const getRandomColor = () => {
     return bookColors[Math.floor(Math.random() * bookColors.length)];
   };
 
+  // Função auxiliar para evitar erros com datas vindas do Java
+  const parseDate = (dateData) => {
+    if (!dateData) return new Date();
+    // Se vier como array [2024, 12, 10]
+    if (Array.isArray(dateData)) {
+        return new Date(dateData[0], dateData[1] - 1, dateData[2]);
+    }
+    // Se vier como string "2024-12-10"
+    return new Date(dateData);
+  };
+
   const fetchData = async () => {
-    // Headers simples, sem Authorization
-    const headers = {
-        'Content-Type': 'application/json'
-    };
+    const headers = { 'Content-Type': 'application/json' };
 
     try {
-      // 1. Buscar todos os livros
+      // 1. Buscar todos os livros disponíveis
       const livrosResponse = await fetch(`${API_URL}/livro`, { headers });
       if (!livrosResponse.ok) throw new Error('Erro ao buscar livros');
       const todosLivros = await livrosResponse.json();
       
       setBooks(todosLivros.filter(livro => livro.status === 'DISPONIVEL'));
 
-      // 2. Buscar todos os empréstimos
+      // 2. Buscar histórico de empréstimos do usuário
       const emprestimosResponse = await fetch(`${API_URL}/emprestimo`, { headers });
       if (!emprestimosResponse.ok) throw new Error('Erro ao buscar empréstimos');
       const todosEmprestimos = await emprestimosResponse.json();
       
-      const emprestimosComCor = todosEmprestimos
-        .filter(emp => !emp.dataDevolucao) 
-        .map(emp => {
-          const dataEmp = new Date(emp.dataEmprestimo + 'T00:00:00');
-          const dataDev = new Date(dataEmp.getTime() + 7 * 24 * 60 * 60 * 1000);
+      // Filtra apenas os empréstimos deste cliente E que ainda NÃO foram devolvidos
+      const emprestimosFiltrados = todosEmprestimos.filter(emp => {
+        // Verifica se é o cliente logado
+        const isCliente = emp.cliente && emp.cliente.id === CLIENTE_ID;
+        // Verifica se NÃO tem data de devolução (ou seja, está ativo)
+        const isAtivo = !emp.dataDevolucao;
+        
+        return isCliente && isAtivo;
+      });
+
+      // Processa os dados para exibição (Cores e Datas)
+      const emprestimosProcessados = emprestimosFiltrados.map(emp => {
+          const dataEmp = parseDate(emp.dataEmprestimo);
+          const dataDev = new Date(dataEmp);
+          dataDev.setDate(dataDev.getDate() + 7); // Calcula vencimento para 7 dias depois
           
           return {
             ...emp,
             color: getRandomColor(),
-            dueDate: dataDev.toLocaleDateString('pt-BR')
+            dueDate: dataDev.toLocaleDateString('pt-BR'),
+            isDevolvido: false // Como filtramos, todos aqui são false
           };
         });
 
-      setMyBooks(emprestimosComCor);
+      setMyBooks(emprestimosProcessados);
 
     } catch (error) {
       console.error("Erro ao buscar dados da API:", error);
@@ -82,7 +101,7 @@ function App() {
     try {
       const response = await fetch(`${API_URL}/emprestimo`, {
         method: 'POST',
-        headers: { 'Content-Type': 'application/json' }, // Sem token
+        headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify(emprestimoDTO)
       });
 
@@ -91,7 +110,7 @@ function App() {
         throw new Error(erro.detalhes || 'Erro ao registrar empréstimo');
       }
 
-      fetchData(); 
+      fetchData(); // Recarrega as listas
 
     } catch (error) {
       console.error("Erro ao emprestar livro:", error);
@@ -103,14 +122,11 @@ function App() {
     try {
       const response = await fetch(`${API_URL}/emprestimo/devolver/${emprestimo.id}`, {
         method: 'POST'
-        // Sem headers de autorização
       });
 
-      if (!response.ok) {
-        throw new Error('Erro ao devolver livro');
-      }
+      if (!response.ok) throw new Error('Erro ao devolver livro');
 
-      fetchData();
+      fetchData(); // Recarrega e o livro sairá da lista pois agora terá data de devolução
 
     } catch (error) {
       console.error("Erro ao devolver livro:", error);

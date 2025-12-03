@@ -44,7 +44,13 @@ public class EmprestimoService {
         Emprestimo emprestimo = new Emprestimo();
         emprestimo.setCliente(cliente);
         emprestimo.setDataEmprestimo(emprestimoDTO.getDataEmprestimo());
-        emprestimo.setDataDevolucao(emprestimoDTO.getDataDevolucao());
+        
+        // --- CORREÇÃO DE LÓGICA ---
+        // Força a data de devolução ser nula na criação.
+        // Um novo empréstimo sempre começa "em aberto".
+        // Isso evita que o livro fique preso como 'EMPRESTADO' se o front mandar uma data errada.
+        emprestimo.setDataDevolucao(null); 
+        // ---------------------------
 
         List<EmprestimoLivro> emprestimoLivros = new ArrayList<>();
         for (Livro livro : livros) {
@@ -67,8 +73,10 @@ public class EmprestimoService {
         Emprestimo emprestimo = emprestimoRepository.findById(emprestimoId)
                 .orElseThrow(() -> new ResourceNotFoundException("Empréstimo não encontrado com o ID: " + emprestimoId));
         
+        // Define a data de devolução como hoje
         emprestimo.setDataDevolucao(LocalDate.now());
 
+        // Libera todos os livros associados a este empréstimo
         for (EmprestimoLivro emprestimoLivro : emprestimo.getEmprestimoLivros()) {
             Livro livro = emprestimoLivro.getLivro();
             livro.setStatus(StatusLivro.DISPONIVEL);

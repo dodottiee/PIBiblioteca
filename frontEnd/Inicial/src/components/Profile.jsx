@@ -1,9 +1,27 @@
-import React from 'react';
-import perfil from '../assets/images/perfil.jpg';
+import React, { useState, useEffect } from 'react';
+import perfil from '../assets/images/perfil.jpg'; // Certifique-se que o caminho da imagem está correto
 
 function Profile() {
-  // Recupera o nome salvo no login. Se não houver, usa "Visitante"
-  const username = localStorage.getItem('username') || 'Visitante';
+  // Inicializa o estado com o valor do localStorage ou 'Visitante'
+  const [username, setUsername] = useState(localStorage.getItem('username') || 'Visitante');
+
+  // Efeito para capturar o username da URL (caso venha do Login em outra porta)
+  useEffect(() => {
+    const queryParams = new URLSearchParams(window.location.search);
+    const userUrl = queryParams.get('username');
+
+    if (userUrl) {
+      // 1. Salva no localStorage para as próximas vezes
+      localStorage.setItem('username', userUrl);
+      
+      // 2. Atualiza o estado para refletir na tela imediatamente
+      setUsername(userUrl);
+      console.log(userUrl)
+      
+      // 3. Limpa a URL (remove o ?username=...) para ficar mais limpa
+      window.history.replaceState({}, document.title, "/");
+    }
+  }, []);
 
   // Função para deslogar
   const handleLogout = () => {
@@ -12,7 +30,8 @@ function Profile() {
     localStorage.removeItem('username');
 
     // 2. Redireciona para a tela de login
-    // Ajuste a porta '5173' se o seu projeto de Login estiver em outra porta
+    // IMPORTANTE: Ajuste a porta se o seu projeto de Login estiver em outra (ex: 5174)
+    // Aqui está configurado para voltar para si mesmo ou para a porta do Login
     window.location.href = 'http://localhost:5173/';
   };
 
@@ -26,8 +45,7 @@ function Profile() {
         {/* Exibe o nome dinâmico aqui */}
         <h3>{username}</h3>
         
-        {/* Estes dados ainda são estáticos, pois o backend (Login) 
-            atualmente só retorna o token, sem ID ou outros detalhes. */}
+        {/* Dados estáticos para exemplo */}
         <p>ID: 123456</p>
         <p>Membro desde<br/>15 de Março de 2020</p>
         <p>Gênero favorito<br/>Ficção</p>
